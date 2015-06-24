@@ -7,10 +7,10 @@ var fs = require("fs"),
     Calc = require("./calc"),
     Firebase = require('firebase');
 
-http.createServer(responseHandler).listen(8888);
+http.createServer(responseHandler).listen(process.env.PORT);
 
-var fbRef = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api/");
-var fbEntries = fbRef.child("entries")
+var fbRef = new Firebase(process.env.FB_URL);
+var fbEntries = fbRef.child("entries");
 var totalsRef = fbRef.child("totals");
 
 function responseHandler(req,resp) {
