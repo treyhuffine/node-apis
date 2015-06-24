@@ -9,7 +9,7 @@ var fs = require("fs"),
 
 http.createServer(responseHandler).listen(8888);
 
-var fbRef = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api");
+var fbRef = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api/entries");
 
 function responseHandler(req,resp) {
   resp.writeHead(200, {"Content-Type": "text/plain"});
@@ -29,28 +29,31 @@ function responseHandler(req,resp) {
     ipAddress: req.connection.remoteAddress,
     userAgent: req.headers['user-agent']
   };
-  switch (apiFunction) {
-    case "gravatarUrl":
-      apiResult = gravatarResponse(resp, apiValue);
-      results.apiResult = apiResult;
-      storeResults(results);
-      resp.end(apiResult);
-      break;
-    case "Calc":
-      apiResult = Calc.calculatorResponse(apiValue);
-      results.apiResult = apiResult;
-      storeResults(results);
-      resp.end(apiResult);
-      break;
-    case "Counts":
-      apiResult = countsResponse(resp, apiValue);
-      results.apiResult = apiResult;
-      storeResults(results);
-      resp.end(apiResult);
-      break;
-    default:
-      apiResult = "Error";
-      defaultResponse(resp);
+  if (req.url === "/") {
+    resp.writeHead(200, {"Content-Type": "text/html"});
+    fs.readFile('index.html', 'utf8', function (err,data) {
+      resp.end(data);
+    });
+  } else {
+    switch (apiFunction) {
+      case "gravatarUrl":
+        apiResult = gravatarResponse(resp, apiValue);
+        resp.end(apiResult);
+        break;
+      case "Calc":
+        apiResult = Calc.calculatorResponse(apiValue);
+        resp.end(apiResult);
+        break;
+      case "Counts":
+        apiResult = countsResponse(resp, apiValue);
+        resp.end(apiResult);
+        break;
+      default:
+        apiResult = "Error";
+        defaultResponse(resp);
+    }
+    results.apiResult = apiResult;
+    storeResults(results);
   }
 }
 

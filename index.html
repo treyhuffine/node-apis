@@ -5,12 +5,18 @@
     <script src="https://cdn.firebase.com/libs/angularfire/1.1.1/angularfire.min.js"></script>
     <script>
       var app = angular.module("fs", ["firebase"]);
-      app.controller("fsCtrl", function($scope, $http) {
+      app.controller("fsCtrl", function($scope, $http, $firebaseObject) {
+        var ref = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api/entries");
+        var syncObject = $firebaseObject(ref);
+        syncObject.$bindTo($scope, "entries")
       });
   </script>
   </head>
   <body>
     <div ng-app="fs" ng-controller="fsCtrl">
+      <div ng-repeat="entry in entries">
+        {{entry.apiEndPoint}} | {{entry.apiValue}} | {{entry.apiResult}}
+      </div>
     </div>
   </body>
 </html>
