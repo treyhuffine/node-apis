@@ -4,9 +4,12 @@ var fs = require("fs"),
     request = require("request"),
     exec = require("child_process").exec,
     md5 = require("MD5"),
-    Calc = require("./calc");
+    Calc = require("./calc"),
+    Firebase = require('firebase');
 
 http.createServer(responseHandler).listen(8888);
+
+var fbRef = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api");
 
 function responseHandler(req,resp) {
   resp.writeHead(200, {"Content-Type": "text/plain"});
@@ -17,19 +20,36 @@ function responseHandler(req,resp) {
 
   var apiRequest = req.url.match(/\/([\w]+)\//),
       apiFunction = (apiRequest ? apiRequest[1] : ""),
-      apiValue = req.url.replace(/\/([\w]+)\//, "");
+      apiValue = req.url.replace(/\/([\w]+)\//, ""),
+      apiResult;
+  results = {
+    apiEndPoint: apiFunction,
+    apiValue: apiValue,
+    timeStamp: Firebase.ServerValue.TIMESTAMP,
+    ipAddress: req.connection.remoteAddress,
+    userAgent: req.headers['user-agent']
+  };
   switch (apiFunction) {
     case "gravatarUrl":
-      gravatarResponse(resp, apiValue);
+      apiResult = gravatarResponse(resp, apiValue);
+      results.apiResult = apiResult;
+      storeResults(results);
+      resp.end(apiResult);
       break;
     case "Calc":
-      var result = Calc.calculatorResponse(apiValue);
-      resp.end(result);
+      apiResult = Calc.calculatorResponse(apiValue);
+      results.apiResult = apiResult;
+      storeResults(results);
+      resp.end(apiResult);
       break;
     case "Counts":
-      countsResponse(resp, apiValue);
+      apiResult = countsResponse(resp, apiValue);
+      results.apiResult = apiResult;
+      storeResults(results);
+      resp.end(apiResult);
       break;
     default:
+      apiResult = "Error";
       defaultResponse(resp);
   }
 }
@@ -37,16 +57,19 @@ function responseHandler(req,resp) {
 function gravatarResponse(resp, email) {
   var gravatarHash = md5(email),
       gravatarUrl = "gravatar.com/avatar/" + gravatarHash;
-  resp.end(gravatarUrl);
+  return gravatarUrl;
 }
 function countsResponse(resp, apiValue) {
   var responseString = decodeURI(apiValue).split(" "),
       spaces = responseString.length - 1,
       words = responseString.length,
       letters = responseString.join(" ").length;
-  resp.end(JSON.stringify({letters: letters, spaces: spaces, words: words}));
+  return JSON.stringify({letters: letters, spaces: spaces, words: words});
 }
 function defaultResponse(resp) {
   resp.write("Not a valid API call\n\nUse the following format: \n  /gravatarUrl/validEmail@email.com\n  /Calc/1+1\n  /Counts/use anyString");
   resp.end();
+}
+function storeResults(results) {
+  fbRef.push(results);
 }
