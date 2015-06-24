@@ -5,15 +5,33 @@
     <script src="https://cdn.firebase.com/libs/angularfire/1.1.1/angularfire.min.js"></script>
     <script>
       var app = angular.module("fs", ["firebase"]);
-      app.controller("fsCtrl", function($scope, $http, $firebaseObject) {
-        var ref = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api/entries");
-        var syncObject = $firebaseObject(ref);
-        syncObject.$bindTo($scope, "entries")
+      app.controller("fsCtrl", function($scope, $http, $firebaseObject, $firebaseArray) {
+        var ref = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api");
+        var entriesRef = ref.child("entries");
+        var totalsRef = ref.child("totals");
+        $scope.entries = $firebaseArray(entriesRef)
+
+        var syncObject = $firebaseObject(totalsRef);
+        syncObject.$bindTo($scope, "totals");
       });
   </script>
   </head>
   <body>
     <div ng-app="fs" ng-controller="fsCtrl">
+      <h4>API Request Counts</h4>
+      <div class="counts">
+        <strong>Gravatar requests:</strong> {{totals.gravatarUrl}}
+      </div>
+      <div class="counts">
+        <strong>Calcs:</strong> {{totals.Calc}}
+      </div>
+      <div class="counts">
+        <strong>Counts:</strong> {{totals.Counts}}
+      </div>
+      <div class="counts">
+        <strong>Errors:</strong> {{totals.Error}}
+      </div>
+      <hr>
       <div ng-repeat="entry in entries">
         {{entry.apiEndPoint}} | {{entry.apiValue}} | {{entry.apiResult}}
       </div>

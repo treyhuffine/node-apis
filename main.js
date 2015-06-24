@@ -9,7 +9,9 @@ var fs = require("fs"),
 
 http.createServer(responseHandler).listen(8888);
 
-var fbRef = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api/entries");
+var fbRef = new Firebase("https://treyhuffine-sample-apps.firebaseio.com/node-api/");
+var fbEntries = fbRef.child("entries")
+var totalsRef = fbRef.child("totals");
 
 function responseHandler(req,resp) {
   resp.writeHead(200, {"Content-Type": "text/plain"});
@@ -29,7 +31,7 @@ function responseHandler(req,resp) {
     ipAddress: req.connection.remoteAddress,
     userAgent: req.headers['user-agent']
   };
-  if (req.url === "/") {
+  if (req.url === "/" || req.url === "") {
     resp.writeHead(200, {"Content-Type": "text/html"});
     fs.readFile('index.html', 'utf8', function (err,data) {
       resp.end(data);
@@ -50,10 +52,15 @@ function responseHandler(req,resp) {
         break;
       default:
         apiResult = "Error";
+        apiFunction = "Error";
         defaultResponse(resp);
     }
     results.apiResult = apiResult;
     storeResults(results);
+    var useCounter = totalsRef.child(apiFunction);
+    useCounter.transaction(function (current_value) {
+      return (current_value || 0) + 1;
+    });
   }
 }
 
@@ -74,5 +81,5 @@ function defaultResponse(resp) {
   resp.end();
 }
 function storeResults(results) {
-  fbRef.push(results);
+  fbEntries.push(results);
 }
