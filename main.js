@@ -15,7 +15,7 @@ function responseHandler(req,resp) {
   }
 
   var apiRequest = req.url.match(/\/([\w]+)\//),
-      apiFunction = apiRequest[1],
+      apiFunction = (apiRequest ? apiRequest[1] : ""),
       apiValue = req.url.replace(/\/([\w]+)\//, "");
   switch (apiFunction) {
     case "gravatarUrl":
@@ -62,6 +62,6 @@ function countsResponse(resp, apiValue) {
   resp.end(JSON.stringify({letters: letters, spaces: spaces, words: words}));
 }
 function defaultResponse(resp) {
-  resp.write("Not a valid API call\n\nUse the following format: \n  /gravatarUrl/validEmail@email.com\n  /Calc/1+1\n  /Counts/any%String");
+  resp.write("Not a valid API call\n\nUse the following format: \n  /gravatarUrl/validEmail@email.com\n  /Calc/1+1\n  /Counts/use anyString");
   resp.end();
 }
